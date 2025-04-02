@@ -1,20 +1,19 @@
+// pages/index.js
 import { useState, useEffect } from 'react';
 
 export default function Home() {
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
 
-  // Fetch messages from the API when the component mounts
+  // Fetch messages when the page loads
   useEffect(() => {
     const fetchMessages = async () => {
       try {
         const response = await fetch('/api/messages');
-        if (response.ok) {
-          const data = await response.json();
-          setMessages(data);
-        }
+        const data = await response.json();
+        setMessages(data);
       } catch (error) {
-        console.error("Error fetching messages: ", error);
+        console.error('Error fetching messages:', error);
       }
     };
 
@@ -37,11 +36,11 @@ export default function Home() {
         });
 
         if (response.ok) {
-          setMessages([{ content: message }, ...messages]);
+          setMessages([{ content: message }, ...messages]); // Prepend new message to the list
           setMessage('');
         }
       } catch (error) {
-        console.error("Error posting message: ", error);
+        console.error('Error posting message:', error);
       }
     }
   };
@@ -102,7 +101,7 @@ export default function Home() {
                 backgroundColor: '#fff',
               }}
             >
-              {msg.content}
+              {msg}
             </li>
           ))}
         </ul>

@@ -1,45 +1,38 @@
 // pages/api/messages.js
-import fs from 'fs';
-import path from 'path';
+import Redis from 'ioredis';
 
-// Define file path where messages will be stored (in JSON format)
-const messagesFilePath = path.join(process.cwd(), 'messages.json');
+const redis = new Redis({
+  host: 'sought-leech-54593.upstash.io',  // Replace with your Upstash Redis URL
+  port: 6379, // Default Redis port
+  password: 'AdVBAAIjcDFkMzVmODAyNzM0NmQ0ZmI0ODAxODcwYjE4N2UzZDY5ZHAxMA', // Replace with your Upstash Redis token
+  tls: {} // Enable TLS for secure connection
+});
 
-// Function to read messages from the file
-const readMessages = () => {
-  if (fs.existsSync(messagesFilePath)) {
-    const data = fs.readFileSync(messagesFilePath);
-    return JSON.parse(data);
-  }
-  return [];
-};
-
-// Function to write messages to the file
-const writeMessages = (messages) => {
-  fs.writeFileSync(messagesFilePath, JSON.stringify(messages));
-};
-
-export default async (req, res) => {
+export default async function handler(req, res) {
   if (req.method === 'GET') {
-    // Handle GET request: Retrieve messages
-    const messages = readMessages();
-    return res.status(200).json(messages);
-  }
-
-  if (req.method === 'POST') {
-    // Handle POST request: Save a new message
-    const { message } = req.body;
-
-    if (message && message.trim()) {
-      const messages = readMessages();
-      messages.push({ content: message, timestamp: new Date().toISOString() });
-      writeMessages(messages);
-      return res.status(200).json({ success: true });
-    } else {
-      return res.status(400).json({ error: 'Message is required' });
+    try {
+      // Retrieve messages stored in Redis
+      const messages = await redis.lrange('messages', 0, -1);
+      res.status(200).json(messages);
+    } catch (error) {
+      res.status(500).json({ error: 'Error fetching messages from Redis' });
     }
   }
 
-  // Handle unsupported request method
+  if (req.method === 'POST') {
+    const { message } = req.body;
+    if (!message || message.trim() === '') {
+      return res.status(400).json({ error: 'Message is required' });
+    }
+
+    try {
+      // Add message to the Redis list
+      await redis.lpush('messages', message);
+      res.status(200).json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: 'Error posting message to Redis' });
+    }
+  }
+
   res.status(405).json({ error: 'Method Not Allowed' });
-};
+}
