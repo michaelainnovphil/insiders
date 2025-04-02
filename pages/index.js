@@ -4,30 +4,45 @@ export default function Home() {
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
 
-  // Load messages from localStorage when the component mounts
+  // Fetch messages from the API when the component mounts
   useEffect(() => {
-    const savedMessages = localStorage.getItem('messages');
-    if (savedMessages) {
-      setMessages(JSON.parse(savedMessages));
-    }
-  }, []);
+    const fetchMessages = async () => {
+      try {
+        const response = await fetch('/api/messages');
+        if (response.ok) {
+          const data = await response.json();
+          setMessages(data);
+        }
+      } catch (error) {
+        console.error("Error fetching messages: ", error);
+      }
+    };
 
-  // Update localStorage whenever messages change
-  useEffect(() => {
-    if (messages.length > 0) {
-      localStorage.setItem('messages', JSON.stringify(messages));
-    }
-  }, [messages]);
+    fetchMessages();
+  }, []);
 
   const handleMessageChange = (event) => {
     setMessage(event.target.value);
   };
 
-  const handlePostMessage = () => {
+  const handlePostMessage = async () => {
     if (message.trim()) {
-      const updatedMessages = [message, ...messages];
-      setMessages(updatedMessages);
-      setMessage('');
+      try {
+        const response = await fetch('/api/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ message }),
+        });
+
+        if (response.ok) {
+          setMessages([{ content: message }, ...messages]);
+          setMessage('');
+        }
+      } catch (error) {
+        console.error("Error posting message: ", error);
+      }
     }
   };
 
@@ -37,10 +52,10 @@ export default function Home() {
         maxWidth: '600px',
         margin: '0 auto',
         padding: '20px',
-        backgroundImage: 'url(https://f4.bcbits.com/img/a1613897873_16.jpg)', // Replace with your image URL
-        backgroundSize: 'cover', // Ensures the image covers the entire container
-        backgroundPosition: 'center', // Keeps the image centered
-        minHeight: '100vh', // Makes sure the background covers the entire viewport height
+        backgroundImage: 'url(https://f4.bcbits.com/img/a1613897873_16.jpg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        minHeight: '100vh',
       }}
     >
       <h1 style={{ color: 'white' }}>Insider</h1>
@@ -48,7 +63,7 @@ export default function Home() {
       <textarea
         value={message}
         onChange={handleMessageChange}
-        placeholder="hi"
+        placeholder="Write a message"
         rows="4"
         style={{
           width: '100%',
@@ -87,7 +102,7 @@ export default function Home() {
                 backgroundColor: '#fff',
               }}
             >
-              {msg}
+              {msg.content}
             </li>
           ))}
         </ul>
