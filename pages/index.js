@@ -90,21 +90,20 @@ export default function Home() {
       <div style={{ marginTop: '20px' }}>
         <h2 style={{ color: 'white' }}>Messages</h2>
         <ul style={{ listStyle: 'none', paddingLeft: '0' }}>
-        {messages.map((msg, index) => (
-  <li
-    key={index}
-    style={{
-      marginBottom: '10px',
-      padding: '10px',
-      border: '1px solid #ddd',
-      borderRadius: '5px',
-      backgroundColor: '#fff',
-    }}
-  >
-    {msg.content} {/* Access content of the message */}
-  </li>
-))}
-
+          {messages.map((msg, index) => (
+            <li
+              key={index}
+              style={{
+                marginBottom: '10px',
+                padding: '10px',
+                border: '1px solid #ddd',
+                borderRadius: '5px',
+                backgroundColor: '#fff',
+              }}
+            >
+              {msg}
+            </li>
+          ))}
         </ul>
       </div>
     </div>
