@@ -101,7 +101,7 @@ export default function Home() {
       backgroundColor: '#fff',
               }}
             >
-              {msg}
+              {msg.content}
             </li>
           ))}
         </ul>
